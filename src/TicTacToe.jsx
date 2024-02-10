@@ -10,25 +10,33 @@ const Square = ({ value, onSquareClick }) => {
 };
 
 export default function TicTacToe() {
-  const [value, setValue] = useState(null);
-  const [squares, setSquares] = useState(Array(9).fill('')); // ['', '', '', '', '', '', '', '', '']
-
+  const [squares, setSquares] = useState(Array(9).fill(''));
+  const [xIsNext, setXIsNext] = useState(true);
   function handleClick(index) {
-    const nextSquares = squares.slice(); // next squares = squares.values = ['', '', '', '', '', '', '', '', ''];
-    // console.log('Next squares: ' + nextSquares);
-    // console.log('Squares: ' + squares);
-    nextSquares[index] = 'X';
-    setSquares(nextSquares);
-
-    /* Disable code above and enable below to see the difference */
-    // nextSquares = squares; // next squares = squares.values = ['', '', '', '', '', '', '', '', ''];
-    // nextSquares[0] = 'X';
-    // console.log('Next squares: ' + nextSquares);
-    // console.log('Squares: ' + squares);
+    if (squares[index] || calculateWinner(squares)) {
+      return;
+    } else if (!squares[index]) {
+      const nextSquares = squares.slice();
+      if (xIsNext) {
+        nextSquares[index] = 'X';
+      } else if (!xIsNext) {
+        nextSquares[index] = 'O';
+      }
+      setSquares(nextSquares);
+      setXIsNext(!xIsNext);
+    }
+  }
+  const winner = calculateWinner(squares);
+  let status;
+  if (winner) {
+    status = 'Winner: ' + winner;
+  } else {
+    status = 'Next player: ' + (xIsNext ? 'X' : 'O' )
   }
 
   return (
     <>
+      <div className="status">{status}</div>
       <div className="board-row">
         <Square onSquareClick={() => handleClick(0)} value={squares[0]} />
         <Square onSquareClick={() => handleClick(1)} value={squares[1]} />
@@ -46,4 +54,24 @@ export default function TicTacToe() {
       </div>
     </>
   );
+}
+
+function calculateWinner(squares) {
+  const winPossibilities = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6],
+  ];
+  for (let i = 0; i < winPossibilities.length; i++) {
+    const [a, b, c] = winPossibilities[i];
+    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+      return squares[a];
+    } 
+  }
+  return null;
 }
