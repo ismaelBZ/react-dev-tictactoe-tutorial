@@ -9,15 +9,15 @@ const Square = ({ value, onSquareClick }) => {
   );
 };
 
-function TicTacToe({onPlay, xIsNext, squares}) {
+function TicTacToe({ onPlay, xIsNext, squares }) {
   /* VALUES PASSED TROUGHT PROPS */
   // const [squares, setSquares] = useState(Array(9).fill(''));
-  // const [xIsNext, setXIsNext] = useState(true); 
+  // const [xIsNext, setXIsNext] = useState(true);
 
   function handleClick(index) {
     if (squares[index] || calculateWinner(squares)) {
       return;
-    } 
+    }
     const nextSquares = squares.slice();
     if (xIsNext) {
       nextSquares[index] = 'X';
@@ -58,43 +58,43 @@ function TicTacToe({onPlay, xIsNext, squares}) {
 }
 
 export default function Game() {
-  const [xIsNext, setXIsNext] = useState(true);
   const [history, setHistory] = useState([Array(9).fill(null)]);
-  const currentSquares = history[history.length - 1];
+  const [currentMove, setCurrentMove] = useState(0);
+  const xIsNext = currentMove % 2 === 0
+  const currentSquares = history[currentMove];
 
-  function jumpTo(pastMove) {
-    if (pastMove < 1 ) {
-      return;
-    }
-    const times = history.length - pastMove;
-    for (let i = 0; i < times; i++) {
-      setHistory(history.slice(0, -1));
-    }
-  };
-  
+  function jumpTo(move) {
+    setCurrentMove(move);
+  }
+
   const moves = history.map((squares, move) => {
     let description;
     if (move > 0) {
-      description = "Go to move # " + move;
+      description = 'Go to move # ' + move;
     } else {
-      description = 'Go to game start'
+      description = 'Go to game start';
     }
     return (
       <li key={move}>
         <button onClick={() => jumpTo(move)}>{description}</button>
       </li>
     );
-  })
-  
+  });
+
   function handlePlay(nextSquares) {
-    setHistory([...history, nextSquares]);
-    setXIsNext(!xIsNext);
+    const nextHistory = [...history.slice(0, currentMove + 1), nextSquares]
+    setCurrentMove(nextHistory.length - 1)
+    setHistory(nextHistory);
   }
 
   return (
     <div className="game">
       <div className="game-board">
-        <TicTacToe xIsNext={xIsNext} onPlay={handlePlay} squares={currentSquares} />
+        <TicTacToe
+          xIsNext={xIsNext}
+          onPlay={handlePlay}
+          squares={currentSquares}
+        />
       </div>
       <div className="game-info">
         <ol>{moves}</ol>
