@@ -9,29 +9,30 @@ const Square = ({ value, onSquareClick }) => {
   );
 };
 
-export default function TicTacToe() {
-  const [squares, setSquares] = useState(Array(9).fill(''));
-  const [xIsNext, setXIsNext] = useState(true);
+function TicTacToe({onPlay, xIsNext, squares}) {
+  /* VALUES PASSED TROUGHT PROPS */
+  // const [squares, setSquares] = useState(Array(9).fill(''));
+  // const [xIsNext, setXIsNext] = useState(true); 
+
   function handleClick(index) {
     if (squares[index] || calculateWinner(squares)) {
       return;
-    } else if (!squares[index]) {
-      const nextSquares = squares.slice();
-      if (xIsNext) {
-        nextSquares[index] = 'X';
-      } else if (!xIsNext) {
-        nextSquares[index] = 'O';
-      }
-      setSquares(nextSquares);
-      setXIsNext(!xIsNext);
+    } 
+    const nextSquares = squares.slice();
+    if (xIsNext) {
+      nextSquares[index] = 'X';
+    } else {
+      nextSquares[index] = 'O';
     }
+    onPlay(nextSquares);
   }
+
   const winner = calculateWinner(squares);
   let status;
   if (winner) {
     status = 'Winner: ' + winner;
   } else {
-    status = 'Next player: ' + (xIsNext ? 'X' : 'O' )
+    status = 'Next player: ' + (xIsNext ? 'X' : 'O');
   }
 
   return (
@@ -56,6 +57,52 @@ export default function TicTacToe() {
   );
 }
 
+export default function Game() {
+  const [xIsNext, setXIsNext] = useState(true);
+  const [history, setHistory] = useState([Array(9).fill(null)]);
+  const currentSquares = history[history.length - 1];
+
+  function jumpTo(pastMove) {
+    if (pastMove < 1 ) {
+      return;
+    }
+    const times = history.length - pastMove;
+    for (let i = 0; i < times; i++) {
+      setHistory(history.slice(0, -1));
+    }
+  };
+  
+  const moves = history.map((squares, move) => {
+    let description;
+    if (move > 0) {
+      description = "Go to move # " + move;
+    } else {
+      description = 'Go to game start'
+    }
+    return (
+      <li key={move}>
+        <button onClick={() => jumpTo(move)}>{description}</button>
+      </li>
+    );
+  })
+  
+  function handlePlay(nextSquares) {
+    setHistory([...history, nextSquares]);
+    setXIsNext(!xIsNext);
+  }
+
+  return (
+    <div className="game">
+      <div className="game-board">
+        <TicTacToe xIsNext={xIsNext} onPlay={handlePlay} squares={currentSquares} />
+      </div>
+      <div className="game-info">
+        <ol>{moves}</ol>
+      </div>
+    </div>
+  );
+}
+
 function calculateWinner(squares) {
   const winPossibilities = [
     [0, 1, 2],
@@ -71,7 +118,7 @@ function calculateWinner(squares) {
     const [a, b, c] = winPossibilities[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
       return squares[a];
-    } 
+    }
   }
   return null;
 }
